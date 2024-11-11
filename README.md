@@ -25,19 +25,19 @@ The data for this project is sourced from the Kaggle dataset:
 DROP TABLE IF EXISTS movie_details;
 CREATE TABLE movie_details
 (
-			show_id	VARCHAR(15) PRIMARY KEY,
-			type VARCHAR(15),	
-			title VARCHAR(150),
-			director VARCHAR(220),
-			casts VARCHAR(1000),
-			country	VARCHAR(200),
-			date_added	VARCHAR(50),
-			release_year INT,	
-			rating	VARCHAR(40),
-			duration VARCHAR(50),
-			listed_in VARCHAR(100),
-			description VARCHAR(250)
-		);
+show_id	VARCHAR(15) PRIMARY KEY,
+type VARCHAR(15),	
+title VARCHAR(150),
+director VARCHAR(220),
+casts VARCHAR(1000),
+country	VARCHAR(200),
+date_added VARCHAR(50),
+release_year INT,	
+rating	VARCHAR(40),
+duration VARCHAR(50),
+listed_in VARCHAR(100),
+description VARCHAR(250)
+);
 ```
 ## Data Exploration
 ```sql
@@ -54,7 +54,7 @@ FROM movie_details;
 ## 1. Count the number of Movies vs TV Shows
 ```sql
 SELECT  type,
-		    COUNT(*) AS total
+COUNT(*) AS total
 FROM movie_details
 GROUP BY type;
 ```
@@ -62,9 +62,9 @@ GROUP BY type;
 ```sql
 WITH HIGH_RATING AS 
 (SELECT  type, 
-	       rating, 
-		     count(rating) as total_ratings,
-		     RANK() OVER(PARTITION BY type ORDER BY count(rating)desc) AS ratings
+rating, 
+count(rating) as total_ratings,
+RANK() OVER(PARTITION BY type ORDER BY count(rating)desc) AS ratings
 FROM	movie_details
 GROUP BY 1,2
 )
@@ -80,7 +80,7 @@ AND release_year = 2020;
 ## 4. Find the top 5 countries with the most content on Netflix
 ```sql
 SELECT unnest(string_to_array(country,',')) AS country,
-		   COUNT(*) AS total_contents 
+	COUNT(*) AS total_contents 
 FROM movie_details
 GROUP BY country
 ORDER BY 2 DESC
@@ -106,7 +106,7 @@ OR
 
 SELECT * FROM
 	(SELECT *, 
-		UNNEST(STRING_TO_ARRAY(director,',')) AS director_name
+	UNNEST(STRING_TO_ARRAY(director,',')) AS director_name
 	FROM movie_details)
 WHERE director_name = 'Rajiv Chilaka';
 ```
@@ -119,21 +119,20 @@ AND SPLIT_PART(duration,' ',1)::INT > 5;
 ## 9. Count the number of content items in each genre
 ```sql
 SELECT  genre,
-		    COUNT(*) AS total_content
+COUNT(*) AS total_content
 FROM
 	(SELECT*,
-		TRIM(UNNEST(STRING_TO_ARRAY(listed_in,','))) AS genre
-	 FROM movie_details)
+	TRIM(UNNEST(STRING_TO_ARRAY(listed_in,','))) AS genre
+	FROM movie_details)
 GROUP BY genre;
 ```
 ## 10.Find each year and the average numbers of content release in India on netflix. return top 5 year with highest avg content release!
 ```sql
 SELECT  country,
-    		release_year,
-		    COUNT(show_id) AS total_content,
-		    ROUND(COUNT(show_id)::NUMERIC/
-        (SELECT COUNT(show_id) FROM movie_details WHERE country = 'India')::NUMERIC * 100,2) 
-		    AS avg_content
+release_year,
+COUNT(show_id) AS total_content,
+ROUND(COUNT(show_id)::NUMERIC/(SELECT COUNT(show_id) FROM movie_details WHERE country = 'India')::NUMERIC * 100,2) 
+AS avg_content
 FROM movie_details
 WHERE country = 'India'
 GROUP BY 1,2
@@ -170,13 +169,13 @@ LIMIT 10;
 ## 15.Categorize the content based on the presence of the keywords 'kill' and 'violence' in the description field. Label content containing these keywords as 'Bad' and all other content as 'Good'. Count how manyitems fall into each category.
 ```sql
 SELECT  category, 
-		COUNT(*)
+COUNT(*)
 FROM
 	(SELECT *,
-		CASE
-		WHEN description ILIKE '%kill%' OR description ILIKE '%violence%' THEN 'Bad'
-		ELSE 'Good'
-		END AS category
+	CASE
+	WHEN description ILIKE '%kill%' OR description ILIKE '%violence%' THEN 'Bad'
+	ELSE 'Good'
+	END AS category
 	FROM movie_details)
 GROUP BY category;
 ```
